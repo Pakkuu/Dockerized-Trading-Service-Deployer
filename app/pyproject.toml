@@ -1,0 +1,7 @@
+[project]
+name = "mock-trading-app"
+version = "0.1.0"
+description = "Simulated order activity engine for ECS Fargate deployment demo"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []   # stdlib-only; add third-party libs here as needed
