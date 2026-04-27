@@ -28,6 +28,8 @@ RUN uv venv .venv && \
 # ── Stage 2: runtime image ──────────────────────────────────
 FROM python:3.12-slim AS runtime
 
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 LABEL maintainer="your-email@example.com"          # TODO: replace with real contact
 LABEL org.opencontainers.image.title="mock-trading-app"
 LABEL org.opencontainers.image.version="0.1.0"
@@ -53,14 +55,15 @@ ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1
 
 # Runtime environment variables — overridden by ECS task definition
-ENV TRADING_SYMBOL="AAPL" \
-    ORDER_INTERVAL="2" \
-    LOG_LEVEL="INFO"
+ENV ALLOWED_SYMBOLS="SPY,AAPL,MSFT" \
+    MAX_ORDER_QTY="10000" \
+    MAX_NOTIONAL="1000000" \
+    PORT="8080"
 
 USER trader
 
-# ECS health-check: verify the Python process is alive
+# ECS health-check: verify the FastAPI app is alive
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
-    CMD python -c "import sys; sys.exit(0)"
+    CMD curl -f http://localhost:8080/health || exit 1
 
-ENTRYPOINT ["python", "trading_app.py"]
+ENTRYPOINT ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
