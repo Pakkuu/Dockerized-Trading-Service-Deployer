@@ -29,16 +29,16 @@ AWS_REGION="us-east-1"
 AWS_ACCOUNT_ID="123456789012"
 
 # TODO: ECR repository name (must match deploy.sh)
-ECR_REPO_NAME="mock-trading-app"
+ECR_REPO_NAME="risk-check-service"
 
 # TODO: ECS cluster name (must match deploy.sh)
 ECS_CLUSTER_NAME="trading-cluster"
 
 # TODO: ECS service name (must match deploy.sh)
-ECS_SERVICE_NAME="mock-trading-service"
+ECS_SERVICE_NAME="risk-check-service"
 
 # TODO: ECS task definition family (must match deploy.sh)
-TASK_DEF_FAMILY="mock-trading-task"
+TASK_DEF_FAMILY="risk-check-task"
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  SECTION 2 — Teardown options

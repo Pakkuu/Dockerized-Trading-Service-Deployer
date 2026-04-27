@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-#  deploy.sh — Build, push, and launch the mock trading app on AWS ECS Fargate
+#  deploy.sh — Build, push, and launch the Risk Check Service on AWS ECS Fargate
 # =============================================================================
 #
 #  Prerequisites:
@@ -31,16 +31,16 @@ AWS_REGION="us-east-1"
 AWS_ACCOUNT_ID="123456789012"
 
 # TODO: Name of the ECR repository (will be created if absent)
-ECR_REPO_NAME="mock-trading-app"
+ECR_REPO_NAME="risk-check-service"
 
 # TODO: ECS cluster name (must already exist or you must create it first)
 ECS_CLUSTER_NAME="trading-cluster"
 
 # TODO: ECS service name (created if absent, updated if it exists)
-ECS_SERVICE_NAME="mock-trading-service"
+ECS_SERVICE_NAME="risk-check-service"
 
 # TODO: ECS task definition family name
-TASK_DEF_FAMILY="mock-trading-task"
+TASK_DEF_FAMILY="risk-check-task"
 
 # TODO: IAM role ARN that ECS tasks assume at runtime
 #       Must have AmazonECSTaskExecutionRolePolicy attached
@@ -65,9 +65,10 @@ TASK_CPU="256"
 TASK_MEMORY="512"
 
 # Application environment variables injected into the container
-TRADING_SYMBOL="AAPL"   # TODO: change to preferred mock ticker
-ORDER_INTERVAL="2"       # seconds between simulated orders
-LOG_LEVEL="INFO"         # DEBUG | INFO | WARNING
+ALLOWED_SYMBOLS="SPY,AAPL,MSFT"
+MAX_ORDER_QTY="10000"
+MAX_NOTIONAL="1000000"
+PORT="8080"
 
 # CloudWatch log group where container stdout/stderr will be streamed
 LOG_GROUP_NAME="/ecs/${TASK_DEF_FAMILY}"
@@ -187,13 +188,21 @@ TASK_DEF_JSON=$(cat <<EOF
   "executionRoleArn": "${TASK_EXECUTION_ROLE_ARN}",
   "containerDefinitions": [
     {
-      "name": "trading-app",
+      "name": "risk-check-service",
       "image": "${ECR_IMAGE_URI}",
       "essential": true,
       "environment": [
-        { "name": "TRADING_SYMBOL",  "value": "${TRADING_SYMBOL}" },
-        { "name": "ORDER_INTERVAL",  "value": "${ORDER_INTERVAL}" },
-        { "name": "LOG_LEVEL",       "value": "${LOG_LEVEL}" }
+        { "name": "ALLOWED_SYMBOLS", "value": "${ALLOWED_SYMBOLS}" },
+        { "name": "MAX_ORDER_QTY",   "value": "${MAX_ORDER_QTY}" },
+        { "name": "MAX_NOTIONAL",    "value": "${MAX_NOTIONAL}" },
+        { "name": "PORT",            "value": "${PORT}" }
+      ],
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 8080,
+          "protocol": "tcp"
+        }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
@@ -206,7 +215,7 @@ TASK_DEF_JSON=$(cat <<EOF
       "healthCheck": {
         "command": [
           "CMD-SHELL",
-          "python -c 'import sys; sys.exit(0)' || exit 1"
+          "curl -f http://localhost:8080/health || exit 1"
         ],
         "interval": 30,
         "timeout":  10,
