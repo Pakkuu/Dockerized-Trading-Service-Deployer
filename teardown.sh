@@ -19,26 +19,18 @@
 set -euo pipefail
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  SECTION 1 — AWS Configuration  (must match deploy.sh)
+#  SECTION 1 — AWS Configuration (loaded from aws.config)
 # ─────────────────────────────────────────────────────────────────────────────
 
-# TODO: Set your target AWS region
-AWS_REGION="us-east-1"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ ! -f "${SCRIPT_DIR}/aws.config" ]]; then
+    echo "ERROR: aws.config file not found!"
+    exit 1
+fi
 
-# TODO: Replace with your 12-digit AWS account ID
-AWS_ACCOUNT_ID="123456789012"
-
-# TODO: ECR repository name (must match deploy.sh)
-ECR_REPO_NAME="risk-check-service"
-
-# TODO: ECS cluster name (must match deploy.sh)
-ECS_CLUSTER_NAME="trading-cluster"
-
-# TODO: ECS service name (must match deploy.sh)
-ECS_SERVICE_NAME="risk-check-service"
-
-# TODO: ECS task definition family (must match deploy.sh)
-TASK_DEF_FAMILY="risk-check-task"
+set -a
+source "${SCRIPT_DIR}/aws.config"
+set +a
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  SECTION 2 — Teardown options

@@ -21,38 +21,18 @@
 set -euo pipefail
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  SECTION 1 — AWS Configuration (fill in before running)
+#  SECTION 1 — AWS Configuration (loaded from aws.config)
 # ─────────────────────────────────────────────────────────────────────────────
 
-# TODO: Set your target AWS region
-AWS_REGION="us-east-1"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ ! -f "${SCRIPT_DIR}/aws.config" ]]; then
+    echo "ERROR: aws.config file not found!"
+    exit 1
+fi
 
-# TODO: Replace with your 12-digit AWS account ID
-AWS_ACCOUNT_ID="123456789012"
-
-# TODO: Name of the ECR repository (will be created if absent)
-ECR_REPO_NAME="risk-check-service"
-
-# TODO: ECS cluster name (must already exist or you must create it first)
-ECS_CLUSTER_NAME="trading-cluster"
-
-# TODO: ECS service name (created if absent, updated if it exists)
-ECS_SERVICE_NAME="risk-check-service"
-
-# TODO: ECS task definition family name
-TASK_DEF_FAMILY="risk-check-task"
-
-# TODO: IAM role ARN that ECS tasks assume at runtime
-#       Must have AmazonECSTaskExecutionRolePolicy attached
-TASK_EXECUTION_ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/ecsTaskExecutionRole"
-
-# TODO: VPC subnet IDs for the Fargate ENI (comma-separated, no spaces)
-#       Example: "subnet-0abc12345,subnet-0def67890"
-SUBNET_IDS="subnet-CHANGEME1,subnet-CHANGEME2"
-
-# TODO: Security group IDs to attach to the Fargate task (comma-separated)
-#       Example: "sg-0abc12345"
-SECURITY_GROUP_IDS="sg-CHANGEME"
+set -a
+source "${SCRIPT_DIR}/aws.config"
+set +a
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  SECTION 2 — Resource limits & application configuration

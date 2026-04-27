@@ -23,7 +23,20 @@ A bash-based deployment pipeline for a Dockerized **FastAPI Risk Check Service**
 
 ### 1. Fill in your AWS config
 
-Both `deploy.sh` and `teardown.sh` have a `SECTION 1` block at the top with `TODO` comments. Set at minimum:
+The deployment scripts load their configuration from `aws.config`, which in turn loads sensitive IDs from a local `.aws.env` file.
+
+1. Open `aws.config` and adjust the default resource names if desired.
+2. Create `.aws.env` and fill in your sensitive AWS details:
+
+```bash
+cat <<EOF > .aws.env
+AWS_ACCOUNT_ID="123456789012"
+SUBNET_IDS="subnet-0123,subnet-4567"
+SECURITY_GROUP_IDS="sg-0123"
+EOF
+```
+
+Set at minimum the following variables in `.aws.env` (or override them if they are defined in `aws.config`):
 
 | Variable | Description |
 |---|---|
